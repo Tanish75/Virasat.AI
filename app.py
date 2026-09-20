@@ -1,6 +1,4 @@
 import streamlit as st
-import boto3
-import json
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -27,50 +25,33 @@ def generate_bulletproof_pdf(title, text):
     buffer.seek(0)
     return buffer.getvalue()
 
-st.set_page_config(page_title="Virasat.AI", page_icon="🕊️", layout="wide")
+st.set_page_config(page_title="Virasat.AI", page_icon="⚖️", layout="wide")
 
-st.title("🕊️ Virasat.AI (विरासत)")
-st.caption("Dynamic AI-Powered Inheritance & Succession Assistant for Bharat | Built on AWS")
+st.title("🕊️ Virasat.AI")
+st.caption("Succession & Statutory Rights Guidance Assistant")
+st.divider()
 
-col_left, col_right = st.columns([1, 1], gap="medium")
+col_left, col_right = st.columns([1, 1], gap="large")
 
 STATE_DATA = {
-    "Uttar Pradesh": {"portal": "UP eDistrict Portal", "url": "https://edistrict.up.gov.in/", "cert": "Varisan Praman Patra", "dept": "Revenue Dept, UP"},
-    "Maharashtra": {"portal": "Aaple Sarkar Portal", "url": "https://aaplesarkar.mahaonline.gov.in/", "cert": "Legal Heir Certificate", "dept": "Revenue Dept, Maharashtra"},
-    "Delhi NCT": {"portal": "e-District Delhi", "url": "https://edistrict.delhigovt.nic.in/", "cert": "Surviving Member Certificate", "dept": "Revenue Dept, Delhi"},
-    "Karnataka": {"portal": "Seva Sindhu", "url": "https://sevasindhu.karnataka.gov.in/", "cert": "Family Tree Certificate", "dept": "Revenue Admin, Karnataka"},
-    "Bihar": {"portal": "RTPS Bihar", "url": "https://serviceonline.bihar.gov.in/", "cert": "Vanshavali", "dept": "Revenue, Bihar"},
-    "West Bengal": {"portal": "e-District WB", "url": "https://edistrict.wb.gov.in/", "cert": "Legal Heir Certificate", "dept": "Land Revenue, WB"},
-    "Other": {"portal": "National Services Portal", "url": "https://services.india.gov.in/", "cert": "Legal Heir Certificate", "dept": "Citizen Services"}
+    "Uttar Pradesh": {"portal": "UP eDistrict Portal", "url": "https://edistrict.up.gov.in/", "cert": "Varisan Praman Patra"},
+    "Maharashtra": {"portal": "Aaple Sarkar Portal", "url": "https://aaplesarkar.mahaonline.gov.in/", "cert": "Legal Heir Certificate"},
+    "Delhi NCT": {"portal": "e-District Delhi", "url": "https://edistrict.delhigovt.nic.in/", "cert": "Surviving Member Certificate"}
 }
 
 with col_left:
-    st.subheader("📋 Citizen Input Portal")
-    state = st.selectbox("Select State/UT:", list(STATE_DATA.keys()))
-    case_type = st.multiselect("Select Matters Involved:", ["Bank Account Transfer", "Life Insurance (LIC/Private)", "Legal Heir Certificate", "Property Mutation", "Pension Transfer"], default=["Bank Account Transfer", "Life Insurance (LIC/Private)"])
-    input_text = st.text_area("Describe Situation in Detail:", height=140, placeholder=f"e.g., Father passed away in {state}...")
-    generate_btn = st.button("Generate Guidance & Legal Drafts", type="primary", use_container_width=True)
+    state = st.selectbox("State / Territory", list(STATE_DATA.keys()))
+    case_type = st.multiselect("Services Needed", ["Bank Account Transfer", "Life Insurance (LIC/Private)", "Legal Heir Certificate"], default=["Bank Account Transfer"])
+    input_text = st.text_area("Case Details", height=130)
+    generate_btn = st.button("Generate Documents", type="primary", use_container_width=True)
 
 with col_right:
-    st.subheader("📑 Tailored Action Dossier")
-    if generate_btn:
-        if not input_text.strip() or not case_type:
-            st.warning("Kripya details bharein.")
-        else:
-            state_info = STATE_DATA[state]
-            st.success(f"✅ Dossier Configured for {state}")
-            tab1, tab2, tab3 = st.tabs(["📌 Action Plan", "📝 Download Letter (PDF)", "🏛️ Government Portals"])
-            
-            with tab1:
-                st.info("Under RBI Circular DBOD.No.Leg.BC.95, bank must settle nominee claims within 15 days without succession certificate.")
-            
-            with tab2:
-                letter_subject = f"Claim for settlement of dues in A/c of Late [Deceased Name]"
-                letter_text = f"To,\nThe Branch Manager,\nState Bank of India, {state}\n\nSubject: {letter_subject}\n\nRespected Sir/Madam,\nMy father Late [Deceased Name] passed away. I am the nominee for A/c [Account Number]. Kindly settle the dues under RBI guidelines.\n\nYours faithfully,\n[Nominee Name]"
-                
-                edited = st.text_area("Edit Application Letter:", value=letter_text, height=220)
-                pdf_bytes = generate_bulletproof_pdf(letter_subject, edited)
-                st.download_button("📥 Download Application (PDF)", data=pdf_bytes, file_name=f"Claim_{state}.pdf", mime="application/pdf", type="primary")
-
-            with tab3:
-                st.write(f"Portal: {state_info['portal']}")
+    if generate_btn and input_text:
+        tab1, tab2 = st.tabs(["Action Checklist", "Edit & Download PDF"])
+        with tab1:
+            st.info("Under RBI Circular DBOD.No.Leg.BC.95, bank must settle nominee claims within 15 days.")
+        with tab2:
+            letter = f"To,\nThe Branch Manager,\nBank Branch, {state}\n\nSubject: Claim Settlement\n\nRespected Sir,\nKindly settle account dues for Late [Name] under RBI guidelines.\n\nYours faithfully,\n[Nominee Name]"
+            edited = st.text_area("Review Application", value=letter, height=200)
+            pdf = generate_bulletproof_pdf("Claim Settlement", edited)
+            st.download_button("📥 Download Official PDF", data=pdf, file_name=f"Claim_{state}.pdf", mime="application/pdf", type="primary")
